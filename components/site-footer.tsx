@@ -135,7 +135,7 @@ export function SiteFooter() {
             <ul className="space-y-2 text-sm text-white/80">
               <li>
                 <Link
-                  href="/services/long-term-care-pharmacy"
+                  href="/services/ltc"
                   className="hover:text-white transition-colors"
                 >
                   Long-Term Care Pharmacy
@@ -170,12 +170,12 @@ export function SiteFooter() {
                   href="/services/free-prescription-delivery"
                   className="hover:text-white transition-colors"
                 >
-                  Free Prescription Delivery
+                  Relaible Prescription Delivery
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/services/blister-compliance-packaging"
+                  href="/services/blister-packaging"
                   className="hover:text-white transition-colors"
                 >
                   Blister & Compliance Packaging
@@ -199,7 +199,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/services/immunizations-clinical-services"
+                  href="/services/immunizations"
                   className="hover:text-white transition-colors"
                 >
                   Immunizations & Clinical Services
@@ -207,7 +207,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/services/emar-integration"
+                  href="/services/emar"
                   className="hover:text-white transition-colors"
                 >
                   eMAR Integration

@@ -9,7 +9,7 @@ export function AboutSection() {
         <p className="text-muted-foreground leading-relaxed">
           At North Falmouth Pharmacy, we deliver more than prescriptions — we deliver care.
           <br />
-          For over a decade, we’ve supported families, facilities, and caregivers with personalized long-term care (LTC) services,
+          For over 30 years, we’ve supported families, facilities, and caregivers with personalized long-term care (LTC) services,
           LTC at Home programs, and Specialty School medication support.
           <br /><br />
           Our pharmacy integrates eMAR technology and compliance packaging to make medication management
