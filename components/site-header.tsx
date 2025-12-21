@@ -2,10 +2,11 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Phone, Menu, ChevronDown } from "lucide-react"
+import { services } from "@/lib/services"
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
@@ -19,7 +20,7 @@ export function SiteHeader() {
     setServicesOpen(false)
   }
 
-  // Reordered primary nav
+  // Primary nav
   const nav = [
     { href: "/about", label: "About Us" },
     { href: "/pill-finder", label: "Pill Finder" },
@@ -28,13 +29,30 @@ export function SiteHeader() {
     { href: "/contact", label: "Contact" },
   ]
 
+  // Services dropdown built from the source of truth (services lib)
+  const serviceLinks = useMemo(() => {
+    return services
+      .map((s) => ({
+        label: s.title, // you can change to a shorter label field later if you want
+        href: `/services/${s.slug}`,
+        slug: s.slug,
+      }))
+      // nice stable ordering (optional). If you want your custom order, I can add an order array.
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }, [])
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/"
+    return pathname === href || pathname?.startsWith(href + "/")
+  }
+
   return (
     <header
       className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70"
       style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        {/* ✅ Logo with drop shadow */}
+        {/* Logo */}
         <Link href="/" className="flex items-center" onClick={handleNavigate}>
           <Image
             src="/logo.svg"
@@ -51,7 +69,7 @@ export function SiteHeader() {
           />
         </Link>
 
-        {/* ✅ Desktop Nav */}
+        {/* Desktop Nav */}
         <nav className="hidden items-center gap-6 md:flex relative">
           {nav.map((item) => (
             <Link
@@ -59,7 +77,7 @@ export function SiteHeader() {
               href={item.href}
               onClick={handleNavigate}
               className={`text-sm transition-colors ${
-                pathname === item.href
+                isActive(item.href)
                   ? "text-foreground font-medium"
                   : "text-muted-foreground hover:text-foreground"
               }`}
@@ -68,7 +86,7 @@ export function SiteHeader() {
             </Link>
           ))}
 
-          {/* ✅ Services Dropdown */}
+          {/* Services Dropdown */}
           <div
             className="relative"
             onMouseEnter={() => setServicesOpen(true)}
@@ -78,46 +96,37 @@ export function SiteHeader() {
               type="button"
               aria-haspopup="menu"
               aria-expanded={servicesOpen}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className={`flex items-center gap-1 text-sm transition-colors ${
+                pathname?.startsWith("/services")
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
               onClick={() => setServicesOpen((v) => !v)}
             >
               Services <ChevronDown className="h-4 w-4" />
             </button>
 
             <div
-              className={`absolute left-0 top-full z-30 mt-1 w-64 rounded-md border bg-white p-1 shadow-lg transition-all duration-150 ${
+              className={`absolute left-0 top-full z-30 mt-1 w-72 rounded-md border bg-white p-1 shadow-lg transition-all duration-150 ${
                 servicesOpen ? "opacity-100 visible" : "opacity-0 invisible"
               }`}
               onMouseEnter={() => setServicesOpen(true)}
               onMouseLeave={() => setServicesOpen(false)}
             >
-              {[
-                ["Assisted Living & Memory Care", "/services/assisted-living"],
-                ["Group Home & Rest Home Services", "/services/group-home"],
-                ["Long-Term Care Pharmacy", "/services/ltc"],
-                ["eMAR Integration", "/services/emar"],
-                // ✅ Two inserted services here:
-                ["Blister & Compliance Packaging", "/services/blister-packaging"],
-                ["Free Prescription Delivery", "/services/free-prescription-delivery"],
-                // Then continue the remaining ones:
-                ["Speciality Schools Medication Support", "/services/specialty-schools-medication-support"],
-                ["MAP Consulting", "/services/map-consulting"],
-                ["MPCHS Student Training", "/services/mpchs-student-training"],
-                ["Immunizations & Clinical Services", "/services/immunizations"],
-              ].map(([label, href]) => (
+              {serviceLinks.map((item) => (
                 <Link
-                  key={href}
-                  href={href}
+                  key={item.slug}
+                  href={item.href}
                   onClick={handleNavigate}
                   className="block rounded-sm px-3 py-2 text-sm hover:bg-muted transition-colors"
                 >
-                  {label}
+                  {item.label}
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* ✅ Forms Dropdown */}
+          {/* Forms Dropdown */}
           <div
             className="relative"
             onMouseEnter={() => setFormsOpen(true)}
@@ -127,7 +136,11 @@ export function SiteHeader() {
               type="button"
               aria-haspopup="menu"
               aria-expanded={formsOpen}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className={`flex items-center gap-1 text-sm transition-colors ${
+                pathname?.startsWith("/forms")
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
               onClick={() => setFormsOpen((v) => !v)}
             >
               Forms <ChevronDown className="h-4 w-4" />
@@ -158,7 +171,7 @@ export function SiteHeader() {
           </div>
         </nav>
 
-        {/* ✅ Call Now — visible number */}
+        {/* Call Now */}
         <div className="hidden items-center gap-2 md:flex">
           <a
             href="tel:+15085644459"
@@ -180,7 +193,7 @@ export function SiteHeader() {
           </a>
         </div>
 
-        {/* ✅ Mobile Toggle */}
+        {/* Mobile Toggle */}
         <button
           aria-label="Open menu"
           className="md:hidden"
@@ -191,30 +204,54 @@ export function SiteHeader() {
         </button>
       </div>
 
-      {/* ✅ Mobile Menu */}
+      {/* Mobile Menu */}
       {open && (
         <div className="md:hidden animate-fade-in">
           <div className="mx-auto grid max-w-6xl gap-2 px-4 pb-4">
-            {/* Reordered */}
-            <Link href="/about" onClick={handleNavigate} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+            <Link
+              href="/about"
+              onClick={handleNavigate}
+              className="rounded-md px-3 py-2 text-sm hover:bg-muted"
+            >
               About Us
             </Link>
 
-            {/* ✅ Services */}
+            {/* Services */}
             <div className="rounded-md border p-2">
-              <div className="px-2 pb-1 text-xs font-medium text-muted-foreground">Services</div>
+              <div className="px-2 pb-1 text-xs font-medium text-muted-foreground">
+                Services
+              </div>
+
+              {serviceLinks.map((item) => (
+                <Link
+                  key={item.slug}
+                  href={item.href}
+                  onClick={handleNavigate}
+                  className="block rounded-md px-3 py-2 text-sm hover:bg-muted"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            <Link
+              href="/pill-finder"
+              onClick={handleNavigate}
+              className="rounded-md px-3 py-2 text-sm hover:bg-muted"
+            >
+              Pill Finder
+            </Link>
+
+            {/* Forms */}
+            <div className="rounded-md border p-2">
+              <div className="px-2 pb-1 text-xs font-medium text-muted-foreground">
+                Forms
+              </div>
+
               {[
-                ["Assisted Living & Memory Care", "/services/assisted-living"],
-                ["Group Home & Rest Home Services", "/services/group-home"],
-                ["Long-Term Care Pharmacy", "/services/ltc"],
-                ["eMAR Integration", "/services/emar"],
-                ["Blister & Compliance Packaging", "/services/blister-packaging"],
-                ["Free Prescription Delivery", "/services/free-prescription-delivery"],
-                ["MAP Consulting", "/services/map-consulting"],
-                ["Speciality Schools Medication Support", "/services/specialty-schools-medication-support"],
-                ["MPCHS Student Training", "/services/mpchs-student-training"],
-                ["Immunizations & Clinical Services", "/services/immunizations"],
-                ["LTC at Home", "/services/ltc-at-home"],
+                ["Vaccine Consent Form", "/forms/vaccine-consent"],
+                ["Enrollment Form", "/forms/enrollment"],
+                ["Credit Card Update Form", "/forms/credit-card-update"],
               ].map(([label, href]) => (
                 <Link
                   key={href}
@@ -227,31 +264,25 @@ export function SiteHeader() {
               ))}
             </div>
 
-            <Link href="/pill-finder" onClick={handleNavigate} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
-              Pill Finder
-            </Link>
-
-            {/* ✅ Forms */}
-            <div className="rounded-md border p-2">
-              <div className="px-2 pb-1 text-xs font-medium text-muted-foreground">Forms</div>
-              {[
-                ["Vaccine Consent Form", "/forms/vaccine-consent"],
-                ["Enrollment Form", "/forms/enrollment"],
-                ["Credit Card Update Form", "/forms/credit-card-update"],
-              ].map(([label, href]) => (
-                <Link key={href} href={href} onClick={handleNavigate} className="block rounded-md px-3 py-2 text-sm hover:bg-muted">
-                  {label}
-                </Link>
-              ))}
-            </div>
-
-            <Link href="/careers" onClick={handleNavigate} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+            <Link
+              href="/careers"
+              onClick={handleNavigate}
+              className="rounded-md px-3 py-2 text-sm hover:bg-muted"
+            >
               Careers
             </Link>
-            <Link href="/blog" onClick={handleNavigate} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+            <Link
+              href="/blog"
+              onClick={handleNavigate}
+              className="rounded-md px-3 py-2 text-sm hover:bg-muted"
+            >
               Blog
             </Link>
-            <Link href="/contact" onClick={handleNavigate} className="rounded-md px-3 py-2 text-sm hover:bg-muted">
+            <Link
+              href="/contact"
+              onClick={handleNavigate}
+              className="rounded-md px-3 py-2 text-sm hover:bg-muted"
+            >
               Contact
             </Link>
 

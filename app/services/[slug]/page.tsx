@@ -2,18 +2,22 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import Image from "next/image"
 import { services } from "@/lib/services"
-import { Testimonials } from "@/components/testimonials"
-import { NewsletterCTA } from "@/components/services/newsletter-cta"
-
-type Props = { params: { slug: string } }
 
 export function generateStaticParams() {
   return services.map((s) => ({ slug: s.slug }))
 }
 
-export function generateMetadata({ params }: Props): Metadata {
-  const svc = services.find((s) => s.slug === params.slug)
+// ✅ params is async in your Next setup, so await it
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const svc = services.find((s) => s.slug === slug)
+
   if (!svc) return {}
+
   return {
     title: `${svc.title} — North Falmouth Pharmacy`,
     description: svc.description,
@@ -25,13 +29,20 @@ export function generateMetadata({ params }: Props): Metadata {
   }
 }
 
-export default function ServiceDetailPage({ params }: Props) {
-  const svc = services.find((s) => s.slug === params.slug)
+// ✅ make page async + await params
+export default async function ServiceDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  const svc = services.find((s) => s.slug === slug)
+
   if (!svc) return notFound()
 
   return (
     <main className="min-h-dvh bg-background">
-      {/* 🟢 SECTION 1 — HERO HEADER */}
+      {/* HERO */}
       <section className="relative overflow-hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-24">
           <div className="flex items-start gap-6">
@@ -46,7 +57,7 @@ export default function ServiceDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {/* 🖼️ SECTION 2 — HERO IMAGE */}
+      {/* IMAGE + INTRO + FEATURES */}
       <section className="mx-auto max-w-6xl px-6 py-14 md:py-20">
         <div className="rounded-xl bg-foreground/5 p-2">
           <Image
@@ -59,16 +70,14 @@ export default function ServiceDetailPage({ params }: Props) {
           />
         </div>
 
-        {/* 🧩 SECTION 3 — INTRO + FEATURES */}
         <div className="mt-10 grid gap-10 md:grid-cols-2">
           <div>
             <h2 className="text-2xl font-semibold">{svc.title}</h2>
             <p className="mt-3 text-muted-foreground">{svc.intro}</p>
           </div>
 
-          {/* 4 Feature Tiles */}
           <div className="grid grid-cols-2 gap-6">
-            {svc.features.map((f, i) => (
+            {(svc.features ?? []).map((f, i) => (
               <div
                 key={i}
                 className={
@@ -86,9 +95,7 @@ export default function ServiceDetailPage({ params }: Props) {
                 </div>
                 <p
                   className={`mt-2 text-xs ${
-                    f.style === "solid"
-                      ? "opacity-80"
-                      : "text-muted-foreground"
+                    f.style === "solid" ? "opacity-80" : "text-muted-foreground"
                   }`}
                 >
                   {f.body}
@@ -99,7 +106,7 @@ export default function ServiceDetailPage({ params }: Props) {
         </div>
       </section>
 
-      {/* 🧭 SECTION 4 — SPLIT SECTION (IMAGE + BULLETS) */}
+      {/* SPLIT SECTION */}
       <section className="relative isolate overflow-hidden bg-emerald-50/50 py-14 md:py-20">
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-6 md:grid-cols-2">
           <Image
@@ -115,7 +122,7 @@ export default function ServiceDetailPage({ params }: Props) {
             </p>
             <h3 className="mt-3 text-2xl font-semibold">Why Choose Us</h3>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              {svc.bullets.map((b, i) => (
+              {(svc.bullets ?? []).map((b, i) => (
                 <li key={i}>• {b}</li>
               ))}
             </ul>
